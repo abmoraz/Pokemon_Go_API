@@ -15,6 +15,7 @@ debug=False
 steps=0.000095
 google=True
 pub=None
+#pub=True
 earned_xp=0
 use_powerball=False
 #values end

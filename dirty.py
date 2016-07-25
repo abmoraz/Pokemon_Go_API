@@ -4,6 +4,7 @@ import time
 import pokemon_pb2
 import location
 import config
+import sys
 from multiprocessing import Process
 
 multi=False
@@ -57,10 +58,10 @@ def work_stop(local_ses,new_rcp_point):
 				o.join()
 				print '[!] farming done..'
 			else:
-				for t in data_list:
-					if config.debug:
-						print '[!] farming pokestop..'
+				for i,t in enumerate(data_list):
+                                        print '[!] farming pokestop %s of %s' % (i + 1, len(data_list))
 					work_with_stops(t,local_ses.ses,new_rcp_point)
+					print '[!] farming done..'
 	else:
 		walk_random()
 		work_stop(local_ses,new_rcp_point)
@@ -75,18 +76,30 @@ def work_with_stops(current_stop,ses,new_rcp_point):
 			st= map.sess[0].status
 			config.earned_xp+=map.sess[0].amt
 			if st==4:
-				print "[!] +%s (%s)"%(map.sess[0].amt,config.earned_xp)
+				print "   [!] +%s (%s)"%(map.sess[0].amt,config.earned_xp)
 			elif st==3:
-				print "[!] used"
+				print "   [!] used"
 			elif st==2:
-				print "[!] charging"
+				print "   [!] charging"
 			elif st==1:
-				print "[!] teleport.."
+				print "   [!] teleport.."
 				time.sleep(14)
 				work_with_stops(current_stop,ses,new_rcp_point)
 			else:
-				print "[?]:",st
+				print "   [?]: Unknown status %s, stop data: %s" % (st, map.sess[0])
+                        if map.sess[0].amt > 0:
+                            print "   [xp] %s" % map.sess[0].amt
 		else:
-			print '[-] tmp_api empty'
-	except:
-		print '[-] error work_with_stops'
+			print '   [-] tmp_api empty (no stops in range)'
+        except KeyboardInterrupt:
+            print "Ending farming run.  Total XP: %s" % config.earned_xp
+            sys.exit()
+	except Exception, e:
+		print '   [-] error work_with_stops: %s' % e
+		import traceback
+		print traceback.print_exc()
+                print "*** len map.sess: %s" % len(map.sess)
+                if len(map.sess):
+                    print "*** map.sess: %s" % str(map.sess)
+                else: print "*** map: %s" % str(map)
+		time.sleep(14)

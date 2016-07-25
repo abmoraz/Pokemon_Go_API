@@ -43,7 +43,11 @@ def login_pokemon(user,passw):
 def login_google_v2(email,passw):
 	r1 = perform_master_login(email, passw, AID)
 	r2 = perform_oauth(email, r1.get('Token', ''), AID, SVC, APP, CSG)
-	return r2['Auth']
+	try:
+            return r2['Auth']
+        except KeyError, e:
+            print r2
+            raise Exception(r2["Error"])
 	
 def login_google(email,passw):
 	try:
