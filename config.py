@@ -13,6 +13,7 @@ use_proxy=False
 debug=False
 #distance=0
 steps=0.000095
+walk_time=14 #median seconds between updating the server with location
 google=True
 pub=None
 #pub=True

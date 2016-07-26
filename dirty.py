@@ -5,6 +5,7 @@ import pokemon_pb2
 import location
 import config
 import sys
+import random
 from multiprocessing import Process
 
 multi=False
@@ -73,22 +74,26 @@ def work_with_stops(current_stop,ses,new_rcp_point):
 		if tmp_api is not None:
 			map = pokemon_pb2.map()
 			map.ParseFromString(tmp_api)
-			st= map.sess[0].status
-			config.earned_xp+=map.sess[0].amt
-			if st==4:
-				print "   [!] +%s (%s)"%(map.sess[0].amt,config.earned_xp)
-			elif st==3:
-				print "   [!] used"
-			elif st==2:
-				print "   [!] charging"
-			elif st==1:
-				print "   [!] teleport.."
-				time.sleep(14)
-				work_with_stops(current_stop,ses,new_rcp_point)
-			else:
-				print "   [?]: Unknown status %s, stop data: %s" % (st, map.sess[0])
-                        if map.sess[0].amt > 0:
-                            print "   [xp] %s" % map.sess[0].amt
+			if len(map.sess) > 0:
+                            st= map.sess[0].status
+                            config.earned_xp+=map.sess[0].amt
+                            if st==4:
+                                    print "   [!] +%s (%s)"%(map.sess[0].amt,config.earned_xp)
+                            elif st==3:
+                                    print "   [!] used"
+                            elif st==2:
+                                    print "   [!] charging"
+                            elif st==1:
+                                    print "   [!] teleport.."
+                                    wait_to_move()
+                                    work_with_stops(current_stop,ses,new_rcp_point)
+                            else:
+                                    print "   [?]: Unknown status %s, stop data: %s" % (st, map.sess[0])
+                            if map.sess[0].amt > 0:
+                                print "   [xp] %s" % map.sess[0].amt
+                        else:
+                            print "   [?] no map session. Expected array.  Got: %s" % str(map)
+                            wait_to_move()
 		else:
 			print '   [-] tmp_api empty (no stops in range)'
         except KeyboardInterrupt:
@@ -102,4 +107,10 @@ def work_with_stops(current_stop,ses,new_rcp_point):
                 if len(map.sess):
                     print "*** map.sess: %s" % str(map.sess)
                 else: print "*** map: %s" % str(map)
-		time.sleep(14)
+		wait_to_move()
+
+def wait_to_move():
+    min_time = config.walk_time - 4
+    max_time = config.walk_time + 5
+    time.sleep(random.choice(range(min_time, max_time)))
+    
